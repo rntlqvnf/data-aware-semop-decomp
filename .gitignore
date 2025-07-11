@@ -1,0 +1,77 @@
+
+# ---------------------------------
+# Python & Virtual Environments
+# ---------------------------------
+# Byte-compiled / optimized / C-extensions
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+venv/
+VENV/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+
+# ---------------------------------
+# Project Specific & Sensitive Data
+# ---------------------------------
+# 환경 변수 파일 (API 키 등 비밀 정보 포함)
+# 매우 중요합니다. .env 파일은 절대 Git에 커밋하면 안 됩니다.
+.env
+
+# 데이터 디렉토리
+# 대용량 데이터셋은 보통 버전 관리 대상에서 제외합니다.
+# 빈 디렉토리 구조만 유지하고 싶다면, 내부에 .gitkeep 파일을 생성하세요.
+data/
+
+# 로그 파일
+logs/
+*.log
+*.log.*
+
+
+# ---------------------------------
+# IDE / Editor Files
+# ---------------------------------
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+
+# ---------------------------------
+# Operating System Files
+# ---------------------------------
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

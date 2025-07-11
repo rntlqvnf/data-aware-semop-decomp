@@ -1,0 +1,31 @@
+# ----------------
+# Core Framework & Configuration
+# ----------------
+python-dotenv   # .env 파일에서 환경 변수(API 키 등)를 안전하게 로드합니다.
+pyyaml          # YAML 형식의 설정 파일(configs/) 및 Action Catalog(catalog/)를 파싱합니다.
+pydantic        # core/schemas.py에서 사용할 데이터 모델의 유효성 검사 및 관리를 위함입니다.
+
+# ----------------
+# LLM & AI Services
+# ----------------
+openai          # OpenAI 및 Azure OpenAI 서비스의 API를 호출합니다.
+tiktoken        # OpenAI 라이브러리 내부에서 토큰 수를 계산하여 비용 및 컨텍스트 관리를 돕습니다.
+
+# ----------------
+# Machine Learning / Computer Vision
+# ----------------
+# [중요!] torch, torchvision, torchaudio 등은 여기에 명시하지 않습니다.
+# 이들은 Dockerfile의 NVIDIA 베이스 이미지(e.g., nvidia/pytorch:24.05-py3)에
+# 최적화된 버전으로 사전 설치되어 있습니다. 여기에 명시하면 버전 충돌의 원인이 됩니다.
+
+opencv-python-headless  # 서버/도커 환경에 적합한 GUI 미포함 버전의 OpenCV입니다. 이미지/비디오 처리에 필수적입니다.
+Pillow                  # 이미지 로드 및 간단한 조작을 위한 표준 라이브러리입니다. (PIL)
+timm                    # PyTorch 이미지 모델 라이브러리로, EfficientNet과 같은 다양한 사전 학습 모델을 쉽게 사용할 수 있게 해줍니다.
+
+# ----------------
+# Data Analysis & Utilities
+# ----------------
+pandas          # 샘플링 및 프로파일링 단계에서 생성된 데이터를 분석하고 다루는 데 유용합니다.
+scikit-learn    # Causal Analysis 단계 등에서 간단한 머신러닝 기법이나 성능 지표를 계산할 때 사용합니다.
+numpy           # 거의 모든 수치 연산 및 데이터 처리 라이브러리의 근간이 되는 필수 라이브러리입니다.
+tqdm            # 샘플링, 프로파일링 등 시간이 오래 걸리는 작업의 진행률을 시각적으로 보여줘 사용성을 높입니다.
