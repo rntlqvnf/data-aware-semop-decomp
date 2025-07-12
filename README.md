@@ -40,6 +40,7 @@
 ├── requirements.txt            # 📦 파이썬 의존성 목록
 ├── .env                        # 🔑 API 키 등 비밀 정보 (Git에 포함하지 않음!)
 ├── .env.example                # .env 파일 예시
+├── prompts                     # 📝 LLM 프롬프트 템플릿
 ├── configs/
 │   └── config.yaml             # ⚙️ API 키, 모델명, 임계값 등 전역 설정
 ├── core/

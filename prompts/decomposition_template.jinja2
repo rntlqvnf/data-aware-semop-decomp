@@ -1,0 +1,40 @@
+You are an expert AI Planner for the DWSemDcmp framework.
+Your task is to design {{ num_strategies }} distinct, executable strategies to solve the following user request for {{ modality }} data:
+
+"{{ operator_prompt }}"
+
+Each strategy must be expressed as a YAML program that returns a final boolean value.
+
+Guiding Principles for Strategies
+Generate strategies with different trade-offs:
+1.  A "Fast & Cheap" strategy that prioritizes local, low-latency models.
+2.  A "High Accuracy" strategy that uses powerful, potentially expensive cloud models (like GPT-4o) to achieve the best possible result.
+3.  A "Balanced Hybrid" strategy that uses cheap local models for initial filtering and expensive models only on promising candidates.
+
+Output Format (Required)
+You MUST return your strategies as a single YAML object. Provide no additional explanation or commentary.
+The structure MUST be:
+
+strategies:
+  - name: StrategyA
+    description: "A brief one-line description of this strategy's approach."
+    plan:
+      - type: call
+        op: <ActionName>
+        in: [<var1>, <var2>, ...]
+        out: <var_name>
+      - type: code
+        body: |
+          <valid Python code using previous variables>
+    return: <final_boolean_variable>
+
+Available Action Set
+You may ONLY use the atomic actions listed below. The description field explains what each action does.
+
+{{ available_actions_yaml }}
+
+Goal
+For each strategy:
+- Clearly define a plan using type: call or type: code.
+- Define the final boolean result using return:.
+- Be strict and avoid any free-text or markdown formatting—output only a YAML block.

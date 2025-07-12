@@ -1,0 +1,171 @@
+- name: DecodeImage
+  description: "바이너리 형식의 이미지 파일(JPEG, PNG 등)을 처리 가능한 PIL.Image 객체로 디코딩합니다."
+  modality: image
+  inputs:
+    - { name: "binary_image", type: "bytes" }
+  outputs:
+    - { name: "image_object", type: "PIL.Image" }
+  implementations:
+    - model_name: "Pillow_Decode"
+      source: "local_python"
+      metrics: { latency_ms: 0.5, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 50 }
+
+- name: ResizeImage
+  description: "이미지의 크기를 지정된 목표 크기로 변경합니다. 모델의 입력 크기에 맞추는 데 사용됩니다."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+    - { name: "target_size", type: "Tuple[int, int]" }
+  outputs:
+    - { name: "resized_image", type: "PIL.Image" }
+  implementations:
+    - model_name: "Pillow_Resize_Lanczos"
+      source: "local_python"
+      metrics: { latency_ms: 0.2, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 100 }
+
+- name: AssessClarity
+  description: "이미지의 선명도 또는 흐림 정도를 0.0(매우 흐림)에서 1.0(매우 선명) 사이의 점수로 평가합니다. 라우팅을 위한 핵심 특징으로 사용됩니다."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+  outputs:
+    - { name: "clarity_score", type: "float" }
+  implementations:
+    - model_name: "OpenCV_Laplacian_Variance"
+      source: "local_opencv"
+      metrics: { latency_ms: 5, cost_usd_per_image: 0.0, accuracy: 0.95, vram_mb: 50 }
+
+- name: DenoiseImage
+  description: "이미지에서 노이즈를 제거하여 품질을 향상시킵니다."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+  outputs:
+    - { name: "denoised_image", type: "PIL.Image" }
+  implementations:
+    - model_name: "OpenCV_FastNlMeans"
+      source: "local_opencv"
+      metrics: { latency_ms: 15, cost_usd_per_image: 0.0, accuracy: 0.85, vram_mb: 200 }
+    - model_name: "DnCNN_PyTorch"
+      source: "local_pytorch"
+      metrics: { latency_ms: 4, cost_usd_per_image: 0.0, accuracy: 0.95, vram_mb: 4500 }
+
+- name: GetImageEmbedding
+  description: "이미지를 고차원 벡터(임베딩)로 변환하여 의미적 검색이나 비교에 사용합니다."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+  outputs:
+    - { name: "embedding_vector", type: "numpy.ndarray" }
+  implementations:
+    - model_name: "CLIP-ViT-B-32"
+      source: "huggingface_hub"
+      metrics: { latency_ms: 4, cost_usd_per_image: 0.0, accuracy: 0.88, vram_mb: 3500 }
+    - model_name: "SigLIP-S-14"
+      source: "huggingface_hub"
+      metrics: { latency_ms: 2, cost_usd_per_image: 0.0, accuracy: 0.91, vram_mb: 1600 }
+    - model_name: "Azure_Vectorize_Image"
+      source: "azure_ai_vision"
+      metrics: { latency_ms: 250, cost_usd_per_image: 0.0001, accuracy: 0.95, vram_mb: 0 }
+
+- name: DetectObjects
+  description: "이미지 내의 모든 객체를 찾아내고, 각 객체의 위치(bounding box)와 종류(class)를 식별합니다."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+  outputs:
+    - { name: "detected_objects", type: "List[Dict]" } # e.g., [{'box': [x1,y1,x2,y2], 'label': 'table'}, ...]
+  implementations:
+    - model_name: "YOLOv8-S"
+      source: "local_pytorch"
+      metrics: { latency_ms: 15, cost_usd_per_image: 0.0, accuracy: 0.85, vram_mb: 2800 }
+    - model_name: "YOLOv8-X"
+      source: "local_pytorch"
+      metrics: { latency_ms: 50, cost_usd_per_image: 0.0, accuracy: 0.92, vram_mb: 7500 }
+
+- name: ReadTextFromImage
+  description: "이미지 속의 인쇄되거나 손으로 쓴 텍스트를 인식하여 문자열로 변환합니다(OCR)."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+  outputs:
+    - { name: "extracted_text", type: "str" }
+  implementations:
+    - model_name: "EasyOCR"
+      source: "local_python"
+      metrics: { latency_ms: 100, cost_usd_per_image: 0.0, accuracy: 0.80, vram_mb: 2000 }
+    - model_name: "Azure_Read_API"
+      source: "azure_ai_vision"
+      metrics: { latency_ms: 500, cost_usd_per_image: 0.0015, accuracy: 0.96, vram_mb: 0 }
+
+- name: GetImageCaption
+  description: "이미지의 전체적인 내용을 설명하는 자연어 문장(캡션)을 생성합니다."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+  outputs:
+    - { name: "caption_text", type: "str" }
+  implementations:
+    - model_name: "BLIP-2-FlanT5-XL"
+      source: "huggingface_hub"
+      metrics: { latency_ms: 35, cost_usd_per_image: 0.0, accuracy: 0.89, vram_mb: 11000 }
+    - model_name: "Azure_Describe_API"
+      source: "azure_ai_vision"
+      metrics: { latency_ms: 600, cost_usd_per_image: 0.0015, accuracy: 0.94, vram_mb: 0 }
+
+- name: AnswerQuestionAboutImage
+  description: "이미지와 관련된 자연어 질문에 대해 답변합니다(Visual Question Answering, VQA)."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+    - { name: "question_text", type: "str" }
+  outputs:
+    - { name: "answer_text", type: "str" }
+  implementations:
+    - model_name: "LLaVA-1.6-7B"
+      source: "local_pytorch"
+      metrics: { latency_ms: 120, cost_usd_per_image: 0.0, accuracy: 0.85, vram_mb: 16000 }
+    - model_name: "GPT-4o"
+      source: "azure_openai"
+      metrics: { latency_ms: 1500, cost_usd_per_image: 0.005, accuracy: 0.98, vram_mb: 0 }
+
+- name: GenerateImageFromText
+  description: "주어진 텍스트 프롬프트를 기반으로 새로운 이미지를 생성합니다."
+  modality: image
+  inputs:
+    - { name: "prompt_text", type: "str" }
+  outputs:
+    - { name: "generated_image", type: "PIL.Image" }
+  implementations:
+    - model_name: "SDXL-Turbo"
+      source: "local_pytorch"
+      metrics: { latency_ms: 800, cost_usd_per_image: 0.0, accuracy: 0.80, vram_mb: 9000 }
+    - model_name: "DALL-E-3"
+      source: "azure_openai"
+      metrics: { latency_ms: 7000, cost_usd_per_image: 0.04, accuracy: 0.95, vram_mb: 0 }
+
+- name: UpscaleImage
+  description: "저해상도 이미지의 해상도를 높여 더 선명하게 만듭니다(Super Resolution)."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+    - { name: "scale_factor", type: "int" }
+  outputs:
+    - { name: "upscaled_image", type: "PIL.Image" }
+  implementations:
+    - model_name: "ESRGAN-x4"
+      source: "local_pytorch"
+      metrics: { latency_ms: 220, cost_usd_per_image: 0.0, accuracy: 0.90, vram_mb: 2800 }
+
+- name: CropToObject
+  description: "원본 이미지와 객체의 경계 상자(bounding box) 좌표를 받아, 해당 객체 부분만 잘라낸 새로운 이미지 객체를 반환합니다."
+  modality: image
+  inputs:
+    - { name: "image_object", type: "PIL.Image" }
+    - { name: "bounding_box", type: "List[int]" } # [x1, y1, x2, y2]
+  outputs:
+    - { name: "cropped_image", type: "PIL.Image" }
+  implementations:
+    - model_name: "Pillow_Crop"
+      source: "local_python"
+      metrics: { latency_ms: 1, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 10 }
