@@ -9,5 +9,6 @@ services:
       - .env
     volumes:
       - .:/app
+      - ~/.azure:/root/.azure
     stdin_open: true
     tty: true

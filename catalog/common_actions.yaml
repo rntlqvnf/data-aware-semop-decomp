@@ -7,7 +7,7 @@
   outputs:
     - { name: "result", type: "Any" } # 코드의 return 값
   implementations:
-    - model_name: "Python_Exec"
+    - implementation_name: "Python_Exec"
       source: "core_framework"
       metrics: { latency_ms: 1, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 0 }
 
@@ -18,7 +18,7 @@
     - { name: "condition", type: "bool" }
   outputs: [] # 출력이 없고, 흐름 제어 역할만 함
   implementations:
-    - model_name: "Boolean_Filter"
+    - implementation_name: "Boolean_Filter"
       source: "core_framework"
       metrics: { latency_ms: 0.1, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 0 }
 
@@ -30,7 +30,7 @@
   outputs:
     - { name: "dictionary_object", type: "Dict" }
   implementations:
-    - model_name: "Dict_Creator"
+    - implementation_name: "Dict_Creator"
       source: "core_framework"
       metrics: { latency_ms: 0.1, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 0 }
 
@@ -43,7 +43,7 @@
   outputs:
     - { name: "value", type: "Any" }
   implementations:
-    - model_name: "Dict_Accessor"
+    - implementation_name: "Dict_Accessor"
       source: "core_framework"
       metrics: { latency_ms: 0.1, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 0 }
 
@@ -55,7 +55,7 @@
     - { name: "message", type: "str", optional: true } # 출력할 메시지 (선택 사항)
   outputs: []
   implementations:
-    - model_name: "Console_Logger"
+    - implementation_name: "Console_Logger"
       source: "core_framework"
       metrics: { latency_ms: 0.5, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 0 }
 
@@ -67,7 +67,7 @@
     - { name: "file_path", type: "str" }
   outputs: []
   implementations:
-    - model_name: "File_Saver"
+    - implementation_name: "File_Saver"
       source: "core_framework"
       metrics: { latency_ms: 10, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 0 }
   
@@ -81,6 +81,6 @@
   outputs:
     - { name: "structured_data", type: "Dict" }
   implementations:
-    - model_name: "GPT-4o_FunctionCalling"
+    - implementation_name: "GPT-4o_FunctionCalling"
       source: "azure_openai"
       metrics: { latency_ms: 2000, cost_usd_per_image: 0.006, accuracy: 0.95, vram_mb: 0 }

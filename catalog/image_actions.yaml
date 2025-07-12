@@ -6,7 +6,7 @@
   outputs:
     - { name: "image_object", type: "PIL.Image" }
   implementations:
-    - model_name: "Pillow_Decode"
+    - implementation_name: "Pillow_Decode"
       source: "local_python"
       metrics: { latency_ms: 0.5, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 50 }
 
@@ -19,7 +19,7 @@
   outputs:
     - { name: "resized_image", type: "PIL.Image" }
   implementations:
-    - model_name: "Pillow_Resize_Lanczos"
+    - implementation_name: "Pillow_Resize_Lanczos"
       source: "local_python"
       metrics: { latency_ms: 0.2, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 100 }
 
@@ -31,7 +31,7 @@
   outputs:
     - { name: "clarity_score", type: "float" }
   implementations:
-    - model_name: "OpenCV_Laplacian_Variance"
+    - implementation_name: "OpenCV_Laplacian_Variance"
       source: "local_opencv"
       metrics: { latency_ms: 5, cost_usd_per_image: 0.0, accuracy: 0.95, vram_mb: 50 }
 
@@ -43,10 +43,10 @@
   outputs:
     - { name: "denoised_image", type: "PIL.Image" }
   implementations:
-    - model_name: "OpenCV_FastNlMeans"
+    - implementation_name: "OpenCV_FastNlMeans"
       source: "local_opencv"
       metrics: { latency_ms: 15, cost_usd_per_image: 0.0, accuracy: 0.85, vram_mb: 200 }
-    - model_name: "DnCNN_PyTorch"
+    - implementation_name: "DnCNN_PyTorch"
       source: "local_pytorch"
       metrics: { latency_ms: 4, cost_usd_per_image: 0.0, accuracy: 0.95, vram_mb: 4500 }
 
@@ -58,13 +58,13 @@
   outputs:
     - { name: "embedding_vector", type: "numpy.ndarray" }
   implementations:
-    - model_name: "CLIP-ViT-B-32"
+    - implementation_name: "CLIP-ViT-B-32"
       source: "huggingface_hub"
       metrics: { latency_ms: 4, cost_usd_per_image: 0.0, accuracy: 0.88, vram_mb: 3500 }
-    - model_name: "SigLIP-S-14"
+    - implementation_name: "SigLIP-S-14"
       source: "huggingface_hub"
       metrics: { latency_ms: 2, cost_usd_per_image: 0.0, accuracy: 0.91, vram_mb: 1600 }
-    - model_name: "Azure_Vectorize_Image"
+    - implementation_name: "Azure_Vectorize_Image"
       source: "azure_ai_vision"
       metrics: { latency_ms: 250, cost_usd_per_image: 0.0001, accuracy: 0.95, vram_mb: 0 }
 
@@ -76,10 +76,10 @@
   outputs:
     - { name: "detected_objects", type: "List[Dict]" } # e.g., [{'box': [x1,y1,x2,y2], 'label': 'table'}, ...]
   implementations:
-    - model_name: "YOLOv8-S"
+    - implementation_name: "YOLOv8-S"
       source: "local_pytorch"
       metrics: { latency_ms: 15, cost_usd_per_image: 0.0, accuracy: 0.85, vram_mb: 2800 }
-    - model_name: "YOLOv8-X"
+    - implementation_name: "YOLOv8-X"
       source: "local_pytorch"
       metrics: { latency_ms: 50, cost_usd_per_image: 0.0, accuracy: 0.92, vram_mb: 7500 }
 
@@ -91,10 +91,10 @@
   outputs:
     - { name: "extracted_text", type: "str" }
   implementations:
-    - model_name: "EasyOCR"
+    - implementation_name: "EasyOCR"
       source: "local_python"
       metrics: { latency_ms: 100, cost_usd_per_image: 0.0, accuracy: 0.80, vram_mb: 2000 }
-    - model_name: "Azure_Read_API"
+    - implementation_name: "Azure_Read_API"
       source: "azure_ai_vision"
       metrics: { latency_ms: 500, cost_usd_per_image: 0.0015, accuracy: 0.96, vram_mb: 0 }
 
@@ -106,10 +106,10 @@
   outputs:
     - { name: "caption_text", type: "str" }
   implementations:
-    - model_name: "BLIP-2-FlanT5-XL"
+    - implementation_name: "BLIP-2-FlanT5-XL"
       source: "huggingface_hub"
       metrics: { latency_ms: 35, cost_usd_per_image: 0.0, accuracy: 0.89, vram_mb: 11000 }
-    - model_name: "Azure_Describe_API"
+    - implementation_name: "Azure_Describe_API"
       source: "azure_ai_vision"
       metrics: { latency_ms: 600, cost_usd_per_image: 0.0015, accuracy: 0.94, vram_mb: 0 }
 
@@ -122,10 +122,10 @@
   outputs:
     - { name: "answer_text", type: "str" }
   implementations:
-    - model_name: "LLaVA-1.6-7B"
+    - implementation_name: "LLaVA-1.6-7B"
       source: "local_pytorch"
       metrics: { latency_ms: 120, cost_usd_per_image: 0.0, accuracy: 0.85, vram_mb: 16000 }
-    - model_name: "GPT-4o"
+    - implementation_name: "GPT-4o"
       source: "azure_openai"
       metrics: { latency_ms: 1500, cost_usd_per_image: 0.005, accuracy: 0.98, vram_mb: 0 }
 
@@ -137,10 +137,10 @@
   outputs:
     - { name: "generated_image", type: "PIL.Image" }
   implementations:
-    - model_name: "SDXL-Turbo"
+    - implementation_name: "SDXL-Turbo"
       source: "local_pytorch"
       metrics: { latency_ms: 800, cost_usd_per_image: 0.0, accuracy: 0.80, vram_mb: 9000 }
-    - model_name: "DALL-E-3"
+    - implementation_name: "DALL-E-3"
       source: "azure_openai"
       metrics: { latency_ms: 7000, cost_usd_per_image: 0.04, accuracy: 0.95, vram_mb: 0 }
 
@@ -153,7 +153,7 @@
   outputs:
     - { name: "upscaled_image", type: "PIL.Image" }
   implementations:
-    - model_name: "ESRGAN-x4"
+    - implementation_name: "ESRGAN-x4"
       source: "local_pytorch"
       metrics: { latency_ms: 220, cost_usd_per_image: 0.0, accuracy: 0.90, vram_mb: 2800 }
 
@@ -166,6 +166,6 @@
   outputs:
     - { name: "cropped_image", type: "PIL.Image" }
   implementations:
-    - model_name: "Pillow_Crop"
+    - implementation_name: "Pillow_Crop"
       source: "local_python"
       metrics: { latency_ms: 1, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 10 }

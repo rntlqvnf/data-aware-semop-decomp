@@ -104,6 +104,12 @@
     # AZURE_OPENAI_API_KEY=... 와 같이 필요한 키를 입력합니다.
     ```
 
+    혹은, azure CLI를 통해 로그인한 후, 환경 변수를 자동으로 설정할 수 있습니다:
+
+    ```bash
+    az login
+    ```
+
 3.  **도커 이미지 빌드**
     `docker compose`가 `Dockerfile`을 읽어 GPU와 모든 의존성이 포함된 이미지를 생성합니다. (최초 실행 또는 `requirements.txt` 변경 시에만 필요)
 

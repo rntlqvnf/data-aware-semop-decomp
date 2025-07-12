@@ -1,0 +1,42 @@
+# configs/config.yaml
+
+# LLM 서비스 관련 설정
+llm:
+  # 💡 사용할 서비스를 선택하는 마스터 스위치 ('openai' 또는 'azure_openai')
+  provider: "openai"
+
+  # 1. 표준 OpenAI API 설정
+  openai:
+    # OpenAI 플랫폼에서 사용하는 모델 이름
+    model: "gpt-4o"
+
+  # 2. Azure OpenAI API 설정
+  azure_openai:
+    # Azure Portal에서 확인한 배포 이름(Deployment Name)
+    deployment_name: "gpt-4o" 
+    api_version: "2024-05-01-preview"
+
+  # LLM 모델 생성 파라미터
+  generation_params:
+    max_tokens: 4096
+    temperature: 0.5
+    # top_p, frequency_penalty 등 기타 파라미터 추가 가능
+
+# Planner 모듈 관련 설정
+planner:
+  llm_system_prompt: "You are an expert AI Planner for the DWSemDcmp framework."
+  decomposition_params:
+    num_strategies_to_generate: 3
+
+  caching:
+    # true로 설정하면, 동일한 operator_prompt에 대해 LLM을 다시 호출하지 않고 저장된 결과를 사용합니다.
+    enabled: true
+    # LLM 응답을 저장할 캐시 파일의 경로
+    cache_file: "logs/llm_strategy_cache.json"
+
+  visualization:
+    enabled: true # true로 설정하면, LLM이 생성한 전략을 콘솔에 시각화하여 출력합니다.
+
+# 샘플링 단계 관련 설정
+sampling:
+  size: 100

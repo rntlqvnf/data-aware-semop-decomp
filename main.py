@@ -70,7 +70,7 @@ def main():
     # --- 1. 핵심 컴포넌트 초기화 ---
     logging.info("핵심 컴포넌트를 초기화합니다...")
     knowledge_base = KnowledgeBase()
-    planner = Planner(config=config.get('planner', {}), knowledge_base=knowledge_base)
+    planner = Planner(config=config, knowledge_base=knowledge_base)
     router = Router(config=config.get('router', {}), knowledge_base=knowledge_base)
     logging.info("모든 컴포넌트가 성공적으로 초기화되었습니다.")
 
