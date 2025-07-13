@@ -1,5 +1,5 @@
 - name: DecodeImage
-  description: "바이너리 형식의 이미지 파일(JPEG, PNG 등)을 처리 가능한 PIL.Image 객체로 디코딩합니다."
+  description: "Converts a binary-encoded image (e.g., JPEG, PNG) into a usable PIL.Image object."
   modality: image
   inputs:
     - { name: "binary_image", type: "bytes" }
@@ -11,7 +11,7 @@
       metrics: { latency_ms: 0.5, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 50 }
 
 - name: ResizeImage
-  description: "이미지의 크기를 지정된 목표 크기로 변경합니다. 모델의 입력 크기에 맞추는 데 사용됩니다."
+  description: "Resizes the input image to the specified target size. Commonly used to match model input dimensions."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -24,7 +24,7 @@
       metrics: { latency_ms: 0.2, cost_usd_per_image: 0.0, accuracy: 1.0, vram_mb: 100 }
 
 - name: AssessClarity
-  description: "이미지의 선명도 또는 흐림 정도를 0.0(매우 흐림)에서 1.0(매우 선명) 사이의 점수로 평가합니다. 라우팅을 위한 핵심 특징으로 사용됩니다."
+  description: "Evaluates the sharpness or blurriness of the image. Returns a score between 0.0 (very blurry) and 1.0 (very clear)."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -36,7 +36,7 @@
       metrics: { latency_ms: 5, cost_usd_per_image: 0.0, accuracy: 0.95, vram_mb: 50 }
 
 - name: DenoiseImage
-  description: "이미지에서 노이즈를 제거하여 품질을 향상시킵니다."
+  description: "Removes visual noise from the image to improve quality."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -51,7 +51,7 @@
       metrics: { latency_ms: 4, cost_usd_per_image: 0.0, accuracy: 0.95, vram_mb: 4500 }
 
 - name: GetImageEmbedding
-  description: "이미지를 고차원 벡터(임베딩)로 변환하여 의미적 검색이나 비교에 사용합니다."
+  description: "Encodes the image into a high-dimensional embedding vector for semantic comparison."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -69,12 +69,12 @@
       metrics: { latency_ms: 250, cost_usd_per_image: 0.0001, accuracy: 0.95, vram_mb: 0 }
 
 - name: DetectObjects
-  description: "이미지 내의 모든 객체를 찾아내고, 각 객체의 위치(bounding box)와 종류(class)를 식별합니다."
+  description: "Detects all objects in the image and returns their bounding boxes and label names."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
   outputs:
-    - { name: "detected_objects", type: "List[Dict]" } # e.g., [{'box': [x1,y1,x2,y2], 'label': 'table'}, ...]
+    - { name: "detected_objects", type: "List[Dict]", desc: "Each object must have 'label' and 'box'. Example: [{'label': 'table', 'box': [x1, y1, x2, y2]}, ...]" }
   implementations:
     - implementation_name: "YOLOv8-S"
       source: "local_pytorch"
@@ -84,7 +84,7 @@
       metrics: { latency_ms: 50, cost_usd_per_image: 0.0, accuracy: 0.92, vram_mb: 7500 }
 
 - name: ReadTextFromImage
-  description: "이미지 속의 인쇄되거나 손으로 쓴 텍스트를 인식하여 문자열로 변환합니다(OCR)."
+  description: "Extracts printed or handwritten text from the image using OCR."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -99,7 +99,7 @@
       metrics: { latency_ms: 500, cost_usd_per_image: 0.0015, accuracy: 0.96, vram_mb: 0 }
 
 - name: GetImageCaption
-  description: "이미지의 전체적인 내용을 설명하는 자연어 문장(캡션)을 생성합니다."
+  description: "Generates a natural language caption that describes the overall content of the image."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -114,7 +114,7 @@
       metrics: { latency_ms: 600, cost_usd_per_image: 0.0015, accuracy: 0.94, vram_mb: 0 }
 
 - name: AnswerQuestionAboutImage
-  description: "이미지와 관련된 자연어 질문에 대해 답변합니다(Visual Question Answering, VQA)."
+  description: "Answers natural language questions about the image content (VQA)."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -122,15 +122,18 @@
   outputs:
     - { name: "answer_text", type: "str" }
   implementations:
-    - implementation_name: "LLaVA-1.6-7B"
+    - implementation_name: "LLaVA-1.5-7B"
       source: "local_pytorch"
       metrics: { latency_ms: 120, cost_usd_per_image: 0.0, accuracy: 0.85, vram_mb: 16000 }
-    - implementation_name: "GPT-4o"
+    - implementation_name: "GPT-4o_Azure"
       source: "azure_openai"
+      metrics: { latency_ms: 1500, cost_usd_per_image: 0.005, accuracy: 0.98, vram_mb: 0 }
+    - implementation_name: "GPT-4o_OpenAI"
+      source: "openai_api"
       metrics: { latency_ms: 1500, cost_usd_per_image: 0.005, accuracy: 0.98, vram_mb: 0 }
 
 - name: GenerateImageFromText
-  description: "주어진 텍스트 프롬프트를 기반으로 새로운 이미지를 생성합니다."
+  description: "Generates a new image based on a text prompt."
   modality: image
   inputs:
     - { name: "prompt_text", type: "str" }
@@ -143,9 +146,12 @@
     - implementation_name: "DALL-E-3"
       source: "azure_openai"
       metrics: { latency_ms: 7000, cost_usd_per_image: 0.04, accuracy: 0.95, vram_mb: 0 }
+    - implementation_name: "DALL-E-3_OpenAI"
+      source: "openai_api"
+      metrics: { latency_ms: 7000, cost_usd_per_image: 0.04, accuracy: 0.95, vram_mb: 0 }
 
 - name: UpscaleImage
-  description: "저해상도 이미지의 해상도를 높여 더 선명하게 만듭니다(Super Resolution)."
+  description: "Improves the resolution of a low-resolution image (Super Resolution)."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
@@ -158,11 +164,11 @@
       metrics: { latency_ms: 220, cost_usd_per_image: 0.0, accuracy: 0.90, vram_mb: 2800 }
 
 - name: CropToObject
-  description: "원본 이미지와 객체의 경계 상자(bounding box) 좌표를 받아, 해당 객체 부분만 잘라낸 새로운 이미지 객체를 반환합니다."
+  description: "Crops the input image to the specified bounding box of the target object."
   modality: image
   inputs:
     - { name: "image_object", type: "PIL.Image" }
-    - { name: "bounding_box", type: "List[int]" } # [x1, y1, x2, y2]
+    - { name: "bounding_box", type: "List[int]", desc: "[x1, y1, x2, y2]" }
   outputs:
     - { name: "cropped_image", type: "PIL.Image" }
   implementations:

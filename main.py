@@ -18,7 +18,7 @@ from execution.router import Router
 # 로깅 설정
 # =================================================================
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - [DWSemDcmp] - [%(levelname)s] - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
@@ -71,7 +71,7 @@ def main():
     logging.info("핵심 컴포넌트를 초기화합니다...")
     knowledge_base = KnowledgeBase()
     planner = Planner(config=config, knowledge_base=knowledge_base)
-    router = Router(config=config.get('router', {}), knowledge_base=knowledge_base)
+    router = Router(config=config, knowledge_base=knowledge_base)
     logging.info("모든 컴포넌트가 성공적으로 초기화되었습니다.")
 
     # --- 2. [1단계] 계획 및 초기 최적화 ---

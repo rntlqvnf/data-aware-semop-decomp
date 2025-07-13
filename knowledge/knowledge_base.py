@@ -46,7 +46,7 @@ class KnowledgeBase:
         self.logger.info("샘플링 데이터 기반으로 초기 통계 모델을 구축합니다...")
         # TODO: profiling_results 데이터프레임을 분석하여 통계 모델 구축
         self.statistical_model = {} # 임시 모델
-        self.logger.info("초기 통계 모델 구축 완료.")
+        self.logger.info("초기 통계 모델 구축 단계를 스킵합니다. 실제 구현 필요.")
         # pass # 실제 구현 로직
 
     def get_best_plan_for(self, features: Dict[str, Any]) -> Optional[Plan]:

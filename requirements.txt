@@ -27,10 +27,22 @@ pandas==2.2.2
 pyarrow==15.0.2
 scikit-learn==1.4.2
 
+# Hugging Face Transformers 및 관련 라이브러리
+transformers==4.42.3
+accelerate==0.31.0
+
 # ----------------
 # Computer Vision & Utilities
 # ----------------
-opencv-python-headless
-Pillow
-timm
-tqdm
+opencv-python-headless==4.8.0.74
+opencv-contrib-python-headless==4.8.0.74
+Pillow==9.5.0
+timm==0.9.2
+tqdm==4.65.0
+
+
+# ----------------
+# Object Detection & OCR
+# ----------------
+ultralytics==8.2.49
+easyocr==1.7.1

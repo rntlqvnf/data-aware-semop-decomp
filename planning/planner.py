@@ -11,9 +11,10 @@ from jinja2 import Environment, FileSystemLoader
 from pydantic import ValidationError
 import random
 import textwrap 
+import re
 
 from knowledge.knowledge_base import KnowledgeBase
-from core.schemas import Action, Plan, PlanStep, Strategy, Constraints, Metrics, ExecutionStatus
+from core.schemas import Action, Plan, PlanStep, Strategy, Constraints, Metrics, ExecutionStatus, InputVar
 from models.llm_client import LLMClient
 
 class Planner:
@@ -77,18 +78,16 @@ class Planner:
         """생성된 Strategy들을 콘솔에 보기 좋게 시각화하여 출력합니다."""
         if not self.visualization_enabled:
             return
-            
+
         self.logger.info("=" * 80)
         self.logger.info("                🤖 LLM이 생성한 실행 전략 시각화 🤖")
         self.logger.info("=" * 80)
-        
+
         box_width = 78
         content_width = box_width - 4  # "│ "와 " │" 사이의 내용 너비
 
         for i, strategy in enumerate(strategies):
-            # 헬퍼 함수: 텍스트를 박스 안에 예쁘게 출력
             def print_bordered(text, indent=0):
-                # 들여쓰기를 적용한 후, 남은 공간만큼 텍스트를 채웁니다.
                 lines = textwrap.wrap(text, width=content_width - indent)
                 if not lines:
                     print(f"│ {' ' * content_width} │")
@@ -96,38 +95,104 @@ class Planner:
                 for line in lines:
                     print(f"│ {' ' * indent}{line.ljust(content_width - indent)} │")
 
-            # 각 Strategy를 구별하는 헤더 출력
+            def print_bordered_inputs(inputs: Dict[str, InputVar], indent=6):
+                for var_name, var_info in inputs.items():
+                    print_bordered(f"{var_name}:", indent=indent + 1)
+                    if var_info.type == 'literal':
+                        val = repr(var_info.value)
+                        print_bordered(f"└─ type: literal", indent=indent + 3)
+                        print_bordered(f"   value: {val}", indent=indent + 3)
+                    elif var_info.type == 'variable':
+                        source = var_info.source_step or "?"
+                        idx = var_info.output_index if var_info.output_index is not None else 0
+                        print_bordered(f"└─ type: variable", indent=indent + 3)
+                        print_bordered(f"   source: {source} output[{idx}]", indent=indent + 3)
+                    else:
+                        print_bordered(f"└─ type: unknown", indent=indent + 3)
+
             print(f"\n┌{'─' * (box_width - 2)}┐")
             print_bordered(f"[ Strategy {i+1}: {strategy.name} ]")
             print_bordered(f"Description: {strategy.description}")
             print(f"├{'─' * (box_width - 2)}┤")
 
-            # Plan의 각 단계를 순서대로 출력
+            # Plan의 각 LogicalStep 출력
             for step_num, step in enumerate(strategy.plan):
-                step_type = step.get('type', 'N/A').upper()
-                print_bordered(f"[ Step {step_num + 1}: {step_type} ]", indent=2)
-                
-                if step_type == 'CALL':
-                    print_bordered(f"- Action: {step.get('op', 'N/A')}", indent=4)
-                    print_bordered(f"- in:     {str(step.get('in', []))}", indent=4)
-                    print_bordered(f"- out:    {step.get('out', 'N/A')}", indent=4)
-                elif step_type == 'CODE':
-                    print_bordered("- Body:", indent=4)
-                    body = step.get('body', '').strip()
-                    # 코드의 각 줄을 들여쓰기하고 긴 줄은 자동으로 줄바꿈합니다.
-                    for code_line in body.split('\n'):
-                        print_bordered(code_line.strip(), indent=6)
-                
-                # 마지막 단계가 아니면 화살표 출력
+                print_bordered(f"[ Step {step_num + 1}: {step.op} (id: {step.id}) ]", indent=2)
+
+                # Input 값 출력
+                print_bordered("- Inputs:", indent=4)
+                print_bordered_inputs(step.in_, indent=6)
+
+                # Output 값 출력
+                print_bordered(f"- Outputs: {step.out}", indent=4)
+
                 if step_num < len(strategy.plan) - 1:
                     print_bordered("▼", indent=int(content_width / 2))
-                
+
             print(f"├{'─' * (box_width - 2)}┤")
-            # 최종 반환 값 출력
             print_bordered(f"[ Return ]", indent=2)
             print_bordered(f"- Value: {strategy.return_val}", indent=4)
             print(f"└{'─' * (box_width - 2)}┘")
-        
+
+        self.logger.info("=" * 80)
+
+    def _visualize_candidate_plans(self, plans: List[Plan]):
+        """생성된 Candidate Plan들을 콘솔에 보기 좋게 시각화하여 출력합니다."""
+        if not self.visualization_enabled:
+            return
+
+        self.logger.info("=" * 80)
+        self.logger.info("              📋 후보 Plan 시각화 📋")
+        self.logger.info("=" * 80)
+
+        box_width = 78
+        content_width = box_width - 4  # "│ "와 " │" 사이의 내용 너비
+
+        for plan in plans:
+            def print_bordered(text: str, indent: int = 0):
+                lines = textwrap.wrap(text, width=content_width - indent)
+                if not lines:
+                    print(f"│ {' ' * content_width} │")
+                    return
+                for line in lines:
+                    print(f"│ {' ' * indent}{line.ljust(content_width - indent)} │")
+
+            print(f"\n┌{'─' * (box_width - 2)}┐")
+            print_bordered(f"[ Plan: {plan.name} ]")
+            print_bordered(f"Derived from Strategy: {plan.strategy_name}")
+            print(f"├{'─' * (box_width - 2)}┤")
+
+            for idx, step in enumerate(plan.steps):
+                print_bordered(f"[ Step {idx+1}: {step.step_id} ]", indent=2)
+                print_bordered(f"- Action: {step.action_name}", indent=4)
+                print_bordered(f"- Impl:   {step.implementation_name}", indent=4)
+
+                # 입력 시각화
+                print_bordered("- Inputs:", indent=4)
+                for var_name, var_info in step.inputs.items():
+                    if isinstance(var_info, dict):
+                        source = var_info.get("type", "unknown")
+                        if source == "literal":
+                            val_str = f"{var_name} ← (literal) {var_info.get('value')}"
+                        elif source == "variable":
+                            val_str = (f"{var_name} ← (from step '{var_info.get('source_step')}' "
+                                    f"output[{var_info.get('output_index', 0)}])")
+                        else:
+                            val_str = f"{var_name} ← (unknown source)"
+                    else:
+                        val_str = f"{var_name} ← {var_info}"  # fallback
+                    print_bordered(val_str, indent=6)
+
+                # 출력 시각화
+                print_bordered("- Outputs:", indent=4)
+                for out_key, out_val in step.outputs.items():
+                    print_bordered(f"{out_key} → {out_val}", indent=6)
+
+                if idx < len(plan.steps) - 1:
+                    print_bordered("▼", indent=int(content_width / 2))
+
+            print(f"└{'─' * (box_width - 2)}┘")
+
         self.logger.info("=" * 80)
 
     def _call_llm_and_update_cache(self, operator_prompt: str, modality: str, available_actions: List[Action], cache: Dict) -> str:
@@ -226,56 +291,64 @@ class Planner:
         return user_prompt
 
     def _generate_candidate_plans(self, strategies: List[Strategy], constraints: Constraints, available_actions: Dict[str, Action]) -> List[Plan]:
-        """각 Strategy로부터 더미 Plan 객체를 생성합니다."""
+        """각 Strategy로부터 Plan 객체를 생성합니다."""
         self.logger.info(f"{len(strategies)}개의 Strategy로부터 후보 Plan들을 생성합니다...")
         candidate_plans = []
-        
-        for i, strategy in enumerate(strategies):
-            plan_steps = []
-            for j, step_dict in enumerate(strategy.plan):
-                action_name = step_dict.get("op")
-                
-                if step_dict.get("type") == "code" or not action_name:
-                    continue
 
+        for strategy in strategies:
+            plan_steps = []
+
+            for step in strategy.plan:
+                step_id = step.id
+                action_name = step.op
                 action = available_actions.get(action_name)
+
                 if not action:
                     self.logger.warning(f"Strategy '{strategy.name}'의 Action '{action_name}'을 카탈로그에서 찾을 수 없습니다.")
                     continue
-                
-                # 💡 핵심 수정 부분: LLM의 출력을 스키마에 맞는 딕셔너리로 변환합니다.
+
+                # 입력 매핑: 각 입력 변수를 처리
                 inputs_dict = {}
-                llm_inputs = step_dict.get("in", [])
-                # Action의 공식 입력 파라미터 이름과 LLM이 제공한 변수 이름을 매핑합니다.
-                for idx, action_input in enumerate(action.inputs):
-                    if idx < len(llm_inputs):
-                        inputs_dict[action_input.name] = llm_inputs[idx]
+                for input_name, input_val in step.in_.items():
+                    if input_val.type == "literal":
+                        inputs_dict[input_name] = input_val.value
+                    elif input_val.type == "variable":
+                        inputs_dict[input_name] = {
+                            "source_step": input_val.source_step,
+                            "output_index": input_val.output_index or 0
+                        }
+                    else:
+                        self.logger.warning(f"알 수 없는 입력 타입: {input_val.type} in step {step_id}")
 
-                outputs_dict = {}
-                llm_output = step_dict.get("out")
-                # Action의 공식 출력 파라미터 이름과 LLM이 제공한 변수 이름을 매핑합니다.
-                if llm_output and action.outputs:
-                    outputs_dict[action.outputs[0].name] = llm_output
+                # 출력 매핑: Logical → Physical 이름 그대로 전달
+                outputs_dict = {name: name for name in step.out}
 
-                implementation_name = action.implementations[0].implementation_name if action.implementations else "dummy_implementation"
-
-                plan_step = PlanStep(
-                    step_id=f"{strategy.name}-step-{j}",
-                    action_name=action_name,
-                    implementation_name=implementation_name,
-                    inputs=inputs_dict,   # 딕셔너리로 전달
-                    outputs=outputs_dict  # 딕셔너리로 전달
+                # 구현체 결정 (임시로 첫 번째 구현체 사용)
+                implementation_name = (
+                    action.implementations[0].implementation_name
+                    if action.implementations else "dummy_implementation"
                 )
-                plan_steps.append(plan_step)
 
-            dummy_plan = Plan(
+                plan_steps.append(
+                    PlanStep(
+                        step_id=step_id,
+                        action_name=action_name,
+                        implementation_name=implementation_name,
+                        inputs=inputs_dict,
+                        outputs=outputs_dict
+                    )
+                )
+
+            # Plan 완성
+            plan = Plan(
                 name=f"Plan-for-{strategy.name}",
                 strategy_name=strategy.name,
                 steps=plan_steps
             )
-            candidate_plans.append(dummy_plan)
-            self.logger.info(f"생성된 더미 Plan: {dummy_plan.name}")
+            candidate_plans.append(plan)
+            self.logger.info(f"생성된 Plan: {plan.name}")
 
+        self._visualize_candidate_plans(candidate_plans)
         return candidate_plans
 
     def _run_profiling(self, plans: List[Plan], data_path: Path, sample_size: int) -> pd.DataFrame:

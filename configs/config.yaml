@@ -3,7 +3,7 @@
 # LLM 서비스 관련 설정
 llm:
   # 💡 사용할 서비스를 선택하는 마스터 스위치 ('openai' 또는 'azure_openai')
-  provider: "openai"
+  provider: "azure_openai"
 
   # 1. 표준 OpenAI API 설정
   openai:
@@ -36,6 +36,13 @@ planner:
 
   visualization:
     enabled: true # true로 설정하면, LLM이 생성한 전략을 콘솔에 시각화하여 출력합니다.
+
+# Router 모듈 관련 설정
+router:
+  # 라우팅 방식을 선택합니다.
+  # 'auto': KnowledgeBase의 통계 모델을 기반으로 자동으로 최적 Plan을 선택합니다.
+  # 'human': 각 데이터 아이템마다 사용자에게 직접 어떤 Plan을 실행할지 묻습니다. (테스트용)
+  routing_mode: "human"
 
 # 샘플링 단계 관련 설정
 sampling:

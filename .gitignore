@@ -75,3 +75,10 @@ logs/
 
 # Windows
 Thumbs.db
+
+# Yolov8s
+yolov8s.pt
+yolov8x.pt
+
+# Example
+example_input.txt

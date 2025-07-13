@@ -1,7 +1,7 @@
 # core/schemas.py
 
 from enum import Enum
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Literal, Union
 from pydantic import BaseModel, Field, ConfigDict
 
 # =================================================================
@@ -41,13 +41,17 @@ class Action(BaseModel):
 # Plan & Execution Schemas
 # =================================================================
 
+class PhysicalInput(BaseModel):
+    source_step: str         # e.g., "decode_image"
+    output_index: int = 0    # e.g., 0 (default)
+
 class PlanStep(BaseModel):
     """실행 계획(Plan)을 구성하는 단일 단계"""
     step_id: str
     action_name: str
     implementation_name: str
-    inputs: Dict[str, Any]
-    outputs: Dict[str, str]
+    inputs: Dict[str, Union[PhysicalInput, Any]]  # Any = literal
+    outputs: Dict[str, str]  # output_name → variable_name
 
 class Plan(BaseModel):
     """하나의 완성된 실행 계획"""
@@ -76,20 +80,30 @@ class ExecutionTrace(BaseModel):
 # Strategy & User Input Schemas
 # =================================================================
 
+class InputVar(BaseModel):
+    type: Literal["variable", "literal"]
+    
+    # For variable type
+    source_step: Optional[str] = None  # step_id, or "input" if user-provided
+    output_index: Optional[int] = 0    # defaults to first output
+
+    # For literal type
+    value: Optional[Any] = None
+
+class LogicalStep(BaseModel):
+    id: str
+    op: str
+    in_: Dict[str, InputVar] = Field(..., alias="in")
+    out: List[str]
+
 class Strategy(BaseModel):
-    """LLM이 생성한 추상적인 계획(Action의 순서)"""
     name: str
     description: str
-    # 💡 핵심 수정 부분: 'action_names'를 'plan'으로 변경하고,
-    # 그 타입을 LLM이 생성하는 유연한 구조에 맞게 List[Dict]로 정의합니다.
-    plan: List[Dict[str, Any]]
-    
-    # 'return'은 Python의 예약어이므로, alias를 사용하여 필드 이름을 매핑합니다.
-    return_val: str = Field(..., alias='return')
-
+    plan: List[LogicalStep]
+    return_val: List[str] = Field(..., alias="return")
 
 class Constraints(BaseModel):
-    """사용자가 main.py에 전달하는 제약 조건"""
+    """Constraints passed by the user"""
     max_cost_usd: Optional[float] = None
     max_latency_ms: Optional[float] = None
     min_accuracy: Optional[float] = None

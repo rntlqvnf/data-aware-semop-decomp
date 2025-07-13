@@ -18,22 +18,30 @@ strategies:
   - name: StrategyA
     description: "A brief one-line description of this strategy's approach."
     plan:
-      - type: call
+      - id: <unique_step_id>
         op: <ActionName>
-        in: [<var1>, <var2>, ...]
-        out: <var_name>
-      - type: code
-        body: |
-          <valid Python code using previous variables>
-    return: <final_boolean_variable>
+        in:
+          <input_var1>:
+            type: variable
+            source_step: <step_id>        # 'input' if it's the initial user-provided variable
+            output_index: <integer>       # Optional; default is 0
+          <input_var2>:
+            type: literal
+            value: <literal_value>
+        out: [<output_var1>, <output_var2>]
+    return: [<return_var1>, <return_var2>]
+
+Special Rules for ExecutePythonCode Action
+If you use the ExecutePythonCode action (or any other action that generates Python code)
+- DO NOT use return statements in the code block.
+- Instead, store results in variables, like result = ....
+- The system will retrieve only the variables listed in out: via expected_outputs.
 
 Available Action Set
-You may ONLY use the atomic actions listed below. The description field explains what each action does.
+You may ONLY use the atomic actions listed below. The description field explains what each action does. 
 
 {{ available_actions_yaml }}
 
 Goal
 For each strategy:
-- Clearly define a plan using type: call or type: code.
-- Define the final boolean result using return:.
 - Be strict and avoid any free-text or markdown formatting—output only a YAML block.
